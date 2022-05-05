@@ -1,0 +1,56 @@
+name: 'Install Packages With Cache'
+description: 'Install Packages through yarn, with npm auth token and cache'
+inputs:
+  npm-token:
+    description: 'NPM Token for private package'
+    required: false
+    default: ''
+  is-monorepo:
+    description: 'Using in a monorepo project?'
+    required: false
+    default: false
+  skip-cache:
+    description: 'Wanna skip cache?'
+    required: false
+    default: false
+runs:
+  using: 'composite'
+  steps:
+    # cache configs
+    - name: Output OS version
+      id: output-os-version
+      run: echo "::set-output name=version::`lsb_release -d -s`"
+      shell: bash
+    - name: Output Node version
+      id: output-node-version
+      run: echo "::set-output name=version::`node -v`"
+      shell: bash
+    - name: Cache monorepo node_modules
+      if: ${{ !fromJSON(inputs.skip-cache) && fromJSON(inputs.is-monorepo) }}
+      uses: actions/cache@v2
+      with:
+        path: "**/node_modules/"
+        key: ${{ steps.output-os-version.outputs.version }}-node${{ steps.output-node-version.outputs.version }}-yarn-${{ hashFiles('**/yarn.lock') }}
+    - name: Cache single-repo node_modules
+      if: ${{ !fromJSON(inputs.skip-cache) && !fromJSON(inputs.is-monorepo) }}
+      uses: actions/cache@v2
+      with:
+        path: "node_modules/"
+        key: ${{ steps.output-os-version.outputs.version }}-node${{ steps.output-node-version.outputs.version }}-yarn-${{ hashFiles('yarn.lock') }}
+
+    # install packages
+    - name: Set .npmrc to use npm auth
+      if: ${{ inputs.npm-token }}
+      run: |
+        echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}" >> .npmrc
+        echo "#always-auth=true" >> .npmrc
+      shell: bash
+    - name: Install packages without updating lock file
+      run: yarn --frozen-lockfile
+      env:
+        NPM_TOKEN: ${{ inputs.npm-token }}
+      shell: bash
+    - name: Delete .npmrc
+      if: ${{ inputs.npm-token }}
+      run: rm -f .npmrc
+      shell: bash
