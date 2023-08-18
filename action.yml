@@ -19,11 +19,11 @@ runs:
     # cache configs
     - name: Output OS version
       id: output-os-version
-      run: echo "::set-output name=version::`lsb_release -d -s`"
+      run: echo "version=`lsb_release -d -s`" >> $GITHUB_OUTPUT
       shell: bash
     - name: Output Node version
       id: output-node-version
-      run: echo "::set-output name=version::`node -v`"
+      run: echo "version=`node -v`" >> $GITHUB_OUTPUT
       shell: bash
     - name: Cache monorepo node_modules
       if: ${{ !fromJSON(inputs.skip-cache) && fromJSON(inputs.is-monorepo) }}
