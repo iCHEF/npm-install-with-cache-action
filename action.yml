@@ -27,7 +27,7 @@ runs:
       shell: bash
     - name: Cache monorepo node_modules
       if: ${{ !fromJSON(inputs.skip-cache) && fromJSON(inputs.is-monorepo) }}
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: "**/node_modules/"
         key: ${{ steps.output-os-version.outputs.version }}-node${{ steps.output-node-version.outputs.version }}-yarn-${{ hashFiles('**/yarn.lock') }}
@@ -36,7 +36,7 @@ runs:
 
     - name: Cache single-repo node_modules
       if: ${{ !fromJSON(inputs.skip-cache) && !fromJSON(inputs.is-monorepo) }}
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: "node_modules/"
         key: ${{ steps.output-os-version.outputs.version }}-node${{ steps.output-node-version.outputs.version }}-yarn-${{ hashFiles('yarn.lock') }}
