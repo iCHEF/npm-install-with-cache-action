@@ -1,5 +1,5 @@
 name: 'Install Packages With Cache'
-description: 'Install Packages through yarn, with npm auth token and cache'
+description: 'Install Packages with npm auth token and cache'
 inputs:
   npm-token:
     description: 'NPM Token for private package'
@@ -13,6 +13,10 @@ inputs:
     description: 'Wanna skip cache?'
     required: false
     default: "false"
+  engine:
+    description: 'Package manager to use'
+    required: false
+    default: 'npm'
 runs:
   using: 'composite'
   steps:
@@ -25,12 +29,22 @@ runs:
       id: output-node-version
       run: echo "version=`node -v`" >> $GITHUB_OUTPUT
       shell: bash
+
+    - name: Determine lockfile name (npm)
+      if: ${{ inputs.engine }} == 'npm'
+      run: echo "LOCKFILE='package-lock.json'" >> $GITHUB_ENV
+      shell: bash
+    - name: Determine lockfile name (yarn)
+      if: ${{ inputs.engine }} == 'yarn'
+      run: echo "LOCKFILE='yarn.lock'" >> $GITHUB_ENV
+      shell: bash
+
     - name: Cache monorepo node_modules
       if: ${{ !fromJSON(inputs.skip-cache) && fromJSON(inputs.is-monorepo) }}
       uses: actions/cache@v4
       with:
         path: "**/node_modules/"
-        key: ${{ steps.output-os-version.outputs.version }}-node${{ steps.output-node-version.outputs.version }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        key: ${{ steps.output-os-version.outputs.version }}-node${{ steps.output-node-version.outputs.version }}-${{ inputs.engine }}-${{ hashFiles('**/$LOCKFILE') }}
       env:
         SEGMENT_DOWNLOAD_TIMEOUT_MINS: "10"
 
@@ -39,7 +53,7 @@ runs:
       uses: actions/cache@v4
       with:
         path: "node_modules/"
-        key: ${{ steps.output-os-version.outputs.version }}-node${{ steps.output-node-version.outputs.version }}-yarn-${{ hashFiles('yarn.lock') }}
+        key: ${{ steps.output-os-version.outputs.version }}-node${{ steps.output-node-version.outputs.version }}-${{ inputs.engine }}-${{ hashFiles('$LOCKFILE') }}
       env:
         SEGMENT_DOWNLOAD_TIMEOUT_MINS: "10"
 
@@ -50,8 +64,8 @@ runs:
         echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}" >> .npmrc
         echo "#always-auth=true" >> .npmrc
       shell: bash
-    - name: Install packages without updating lock file
-      run: yarn --frozen-lockfile
+    - name: Install packages
+      run: ${{ inputs.engine }} install
       env:
         NPM_TOKEN: ${{ inputs.npm-token }}
       shell: bash
