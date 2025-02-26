@@ -17,6 +17,10 @@ inputs:
     description: 'Package manager to use'
     required: false
     default: 'npm'
+  args:
+    description: 'Arguments to pass to the package manager'
+    required: false
+    default: ''
 runs:
   using: 'composite'
   steps:
@@ -65,7 +69,7 @@ runs:
         echo "#always-auth=true" >> .npmrc
       shell: bash
     - name: Install packages
-      run: ${{ inputs.engine }} install
+      run: ${{ inputs.engine }} install ${{ inputs.args }}
       env:
         NPM_TOKEN: ${{ inputs.npm-token }}
       shell: bash
