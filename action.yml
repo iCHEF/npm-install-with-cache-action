@@ -1,28 +1,24 @@
-name: 'Install Packages With Cache'
-description: 'Install Packages with npm auth token and cache'
+name: "Install Packages With Cache"
+description: "Install Packages with npm auth token and cache"
 inputs:
   npm-token:
-    description: 'NPM Token for private package'
+    description: "NPM Token for private package"
     required: false
-    default: ''
-  is-monorepo:
-    description: 'Using in a monorepo project?'
-    required: false
-    default: "false"
+    default: ""
   skip-cache:
-    description: 'Wanna skip cache?'
+    description: "Wanna skip cache?"
     required: false
     default: "false"
   engine:
-    description: 'Package manager to use'
+    description: "Package manager to use"
     required: false
-    default: 'npm'
+    default: "npm"
   args:
-    description: 'Arguments to pass to the package manager'
+    description: "Arguments to pass to the package manager"
     required: false
-    default: ''
+    default: ""
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     # cache configs
     - name: Output OS version
@@ -34,30 +30,12 @@ runs:
       run: echo "version=`node -v`" >> $GITHUB_OUTPUT
       shell: bash
 
-    - name: Determine lockfile name (npm)
-      if: ${{ inputs.engine }} == 'npm'
-      run: echo "LOCKFILE='package-lock.json'" >> $GITHUB_ENV
-      shell: bash
-    - name: Determine lockfile name (yarn)
-      if: ${{ inputs.engine }} == 'yarn'
-      run: echo "LOCKFILE='yarn.lock'" >> $GITHUB_ENV
-      shell: bash
-
-    - name: Cache monorepo node_modules
-      if: ${{ !fromJSON(inputs.skip-cache) && fromJSON(inputs.is-monorepo) }}
+    - name: Cache node_modules
+      if: ${{ !fromJSON(inputs.skip-cache) }}
       uses: actions/cache@v4
       with:
         path: "**/node_modules/"
-        key: ${{ steps.output-os-version.outputs.version }}-node${{ steps.output-node-version.outputs.version }}-${{ inputs.engine }}-${{ hashFiles('**/$LOCKFILE') }}
-      env:
-        SEGMENT_DOWNLOAD_TIMEOUT_MINS: "10"
-
-    - name: Cache single-repo node_modules
-      if: ${{ !fromJSON(inputs.skip-cache) && !fromJSON(inputs.is-monorepo) }}
-      uses: actions/cache@v4
-      with:
-        path: "node_modules/"
-        key: ${{ steps.output-os-version.outputs.version }}-node${{ steps.output-node-version.outputs.version }}-${{ inputs.engine }}-${{ hashFiles('$LOCKFILE') }}
+        key: ${{ steps.output-os-version.outputs.version }}-node${{ steps.output-node-version.outputs.version }}-${{ inputs.engine }}-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}
       env:
         SEGMENT_DOWNLOAD_TIMEOUT_MINS: "10"
 
