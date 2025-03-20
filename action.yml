@@ -30,7 +30,8 @@ runs:
       run: echo "version=`node -v`" >> $GITHUB_OUTPUT
       shell: bash
 
-    - name: Cache node_modules
+    - id: cache
+      name: Cache node_modules
       if: ${{ !fromJSON(inputs.skip-cache) }}
       uses: actions/cache@v4
       with:
@@ -47,6 +48,7 @@ runs:
         echo "#always-auth=true" >> .npmrc
       shell: bash
     - name: Install packages
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: ${{ inputs.engine }} install ${{ inputs.args }}
       env:
         NPM_TOKEN: ${{ inputs.npm-token }}
