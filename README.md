@@ -1,4 +1,4 @@
-# npm-install-with-cache-action
+# npm-install-with-cache-action v2
 
 ## Usage
 
@@ -8,22 +8,24 @@
 
 ### Inputs
 
-- `npm-token` - defaults to `''`, set auth token if your project dependency contains private packages
-- `is-monorepo` - defaults to `false`, set it to true if using action in a monorepo
-- `skip-cache` - defaults to `false`, set it to true if wanna skip cache steps
+- `npm-token` - defaults to `""`. Provide auth token if your project dependency contains private packages.
+- `skip-cache` - defaults to `"false"`. Set it to `"true"` to skip cache steps.
+- `engine` - default to `"npm"`. Also supports `"yarn"`.
+- `args` - defaults to `""`, will be passed to package manager when running install.
 
 ```yml
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-node@v1
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
       with:
-        node-version: '12.x'
+        node-version: 20
     - name: Install packages with cache
-      uses: iCHEF/npm-install-with-cache-action@v1
+      uses: iCHEF/npm-install-with-cache-action@v2
       with:
         npm-token: ${{ secrets.NPM_TOKEN }}
-        is-monorepo: true
+        engine: npm
+        args: --force
 ```
