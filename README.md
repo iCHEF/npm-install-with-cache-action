@@ -1,4 +1,4 @@
-# npm-install-with-cache-action v2
+# npm-install-with-cache-action v4
 
 ## Usage
 
@@ -18,12 +18,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
+    - uses: actions/checkout@v6
+    - uses: actions/setup-node@v6
       with:
-        node-version: 20
+        node-version: 26
     - name: Install packages with cache
-      uses: iCHEF/npm-install-with-cache-action@v2
+      uses: iCHEF/npm-install-with-cache-action@v4
       with:
         npm-token: ${{ secrets.NPM_TOKEN }}
         engine: npm
