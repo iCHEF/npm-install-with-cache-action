@@ -33,7 +33,7 @@ runs:
     - id: cache
       name: Cache node_modules
       if: ${{ !fromJSON(inputs.skip-cache) }}
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: "**/node_modules/"
         key: ${{ steps.output-os-version.outputs.version }}-node${{ steps.output-node-version.outputs.version }}-${{ inputs.engine }}-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}
